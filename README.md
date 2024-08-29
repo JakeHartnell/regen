@@ -1,85 +1,87 @@
-# CosmWasm Starter Pack
+# Regen Network Marketplace Smart Contract
 
-This is a template to build smart contracts in Rust to run inside a
-[Cosmos SDK](https://github.com/cosmos/cosmos-sdk) module on all chains that enable it.
-To understand the framework better, please read the overview in the
-[cosmwasm repo](https://github.com/CosmWasm/cosmwasm/blob/master/README.md),
-and dig into the [cosmwasm docs](https://www.cosmwasm.com).
-This assumes you understand the theory and just want to get coding.
+This CosmWasm smart contract implements a marketplace for eco-credits, mirroring the functionality of the Regen Network Cosmos SDK marketplace module. It allows users to create and manage sell orders for eco-credits, as well as purchase credits directly.
 
-## Creating a new repo from template
+## Features
 
-Assuming you have a recent version of Rust and Cargo installed
-(via [rustup](https://rustup.rs/)),
-then the following should get you a new repo to start a contract:
+- Create sell orders for eco-credits
+- Update existing sell orders
+- Cancel sell orders
+- Buy credits directly from sell orders
+- Manage allowed denominations for trading
+- Set and update marketplace fee parameters
+- Query sell orders and allowed denominations
 
-Install [cargo-generate](https://github.com/ashleygwilliams/cargo-generate) and cargo-run-script.
-Unless you did that before, run this line now:
+## Contract Structure
 
-```sh
-cargo install cargo-generate --features vendored-openssl
-cargo install cargo-run-script
+The contract is organized into several Rust files:
+
+- `src/contract.rs`: Main entry point for the contract, handling instantiation, execution, and queries.
+- `src/execute.rs`: Contains the implementation of all execute functions.
+- `src/query.rs`: Contains the implementation of all query functions.
+- `src/state.rs`: Defines the contract's state and storage.
+- `src/msg.rs`: Defines the message types for contract interaction.
+- `src/error.rs`: Defines custom error types for the contract.
+
+## Usage
+
+### Instantiation
+
+To instantiate the contract, provide the initial fee parameters:
+
+```rust
+InstantiateMsg {
+    fee_params: FeeParams {
+        buyer_percentage_fee: "0.01".to_string(),
+        seller_percentage_fee: "0.01".to_string(),
+    },
+}
 ```
 
-Now, use it to create your new contract.
-Go to the folder in which you want to place it and run:
+### Execute Messages
 
-**Latest**
+The contract supports the following execute messages:
 
-```sh
-cargo generate --git https://github.com/CosmWasm/cw-template.git --name PROJECT_NAME
-```
+1. `Sell`: Create new sell orders for eco-credits.
+2. `UpdateSellOrders`: Update existing sell orders.
+3. `CancelSellOrder`: Cancel a specific sell order.
+4. `BuyDirect`: Buy credits directly from specified sell orders.
+5. `AddAllowedDenom`: Add a new allowed denomination for trading.
+6. `RemoveAllowedDenom`: Remove an allowed denomination.
+7. `GovSetFeeParams`: Set new fee parameters (governance function).
+8. `GovSendFromFeePool`: Send coins from the fee pool (governance function).
 
-For cloning minimal code repo:
+### Query Messages
 
-```sh
-cargo generate --git https://github.com/CosmWasm/cw-template.git --name PROJECT_NAME -d minimal=true
-```
+The contract supports the following query messages:
 
-You will now have a new folder called `PROJECT_NAME` (I hope you changed that to something else)
-containing a simple working contract and build system that you can customize.
+1. `SellOrder`: Query a specific sell order by ID.
+2. `SellOrders`: Query a list of all sell orders.
+3. `SellOrdersByBatch`: Query sell orders for a specific batch.
+4. `SellOrdersBySeller`: Query sell orders for a specific seller.
+5. `AllowedDenoms`: Query the list of allowed denominations.
 
-## Create a Repo
+## Development
 
-After generating, you have a initialized local git repo, but no commits, and no remote.
-Go to a server (eg. github) and create a new upstream repo (called `YOUR-GIT-URL` below).
-Then run the following:
+To set up the development environment:
 
-```sh
-# this is needed to create a valid Cargo.lock file (see below)
-cargo check
-git branch -M main
-git add .
-git commit -m 'Initial Commit'
-git remote add origin YOUR-GIT-URL
-git push -u origin main
-```
+1. Install Rust and Cargo.
+2. Install [cargo-generate](https://github.com/cargo-generate/cargo-generate) and [cosmwasm-check](https://github.com/CosmWasm/cosmwasm-check).
+3. Clone the repository and navigate to the project directory.
+4. Run `cargo build` to compile the contract.
+5. Run `cargo test` to execute the test suite.
 
-## CI Support
+## Deployment
 
-We have template configurations for both [GitHub Actions](.github/workflows/Basic.yml)
-and [Circle CI](.circleci/config.yml) in the generated project, so you can
-get up and running with CI right away.
+To deploy the contract:
 
-One note is that the CI runs all `cargo` commands
-with `--locked` to ensure it uses the exact same versions as you have locally. This also means
-you must have an up-to-date `Cargo.lock` file, which is not auto-generated.
-The first time you set up the project (or after adding any dep), you should ensure the
-`Cargo.lock` file is updated, so the CI will test properly. This can be done simply by
-running `cargo check` or `cargo unit-test`.
+1. Compile the contract: `cargo wasm`
+2. Optimize the wasm binary: `docker run --rm -v "$(pwd)":/code \
+--mount type=volume,source="$(basename "$(pwd)")_cache",target=/code/target \
+--mount type=volume,source=registry_cache,target=/usr/local/cargo/registry \
+cosmwasm/rust-optimizer:0.12.6`
+3. Deploy the optimized wasm file to your chosen CosmWasm-enabled blockchain.
 
-## Using your project
+## Contributing
 
-Once you have your custom repo, you should check out [Developing](./Developing.md) to explain
-more on how to run tests and develop code. Or go through the
-[online tutorial](https://docs.cosmwasm.com/) to get a better feel
-of how to develop.
-
-[Publishing](./Publishing.md) contains useful information on how to publish your contract
-to the world, once you are ready to deploy it on a running blockchain. And
-[Importing](./Importing.md) contains information about pulling in other contracts or crates
-that have been published.
-
-Please replace this README file with information about your specific project. You can keep
-the `Developing.md` and `Publishing.md` files as useful references, but please set some
-proper description in the README.
+Contributions are welcome! Please feel free to submit a Pull Request.
