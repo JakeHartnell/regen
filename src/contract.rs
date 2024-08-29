@@ -1,11 +1,11 @@
+use cosmwasm_std::{entry_point, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult};
+
 use crate::error::ContractError;
 use crate::execute;
 use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
 use crate::query;
 use crate::state::{FEE_PARAMS, SELL_ORDER_SEQ};
-use cosmwasm_std::{entry_point, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult};
 
-/// Initializes the contract with the given fee parameters
 #[entry_point]
 pub fn instantiate(
     deps: DepsMut,
@@ -19,7 +19,6 @@ pub fn instantiate(
     Ok(Response::new().add_attribute("method", "instantiate"))
 }
 
-/// Handles all execute messages
 #[entry_point]
 pub fn execute(
     deps: DepsMut,
@@ -51,7 +50,6 @@ pub fn execute(
     }
 }
 
-/// Handles all query messages
 #[entry_point]
 pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {

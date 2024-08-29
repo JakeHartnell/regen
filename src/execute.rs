@@ -1,4 +1,4 @@
-use cosmwasm_std::{DepsMut, Env, MessageInfo, Response, Uint128};
+use cosmwasm_std::{Coin, DepsMut, Env, MessageInfo, Response, Uint128};
 use std::str::FromStr;
 
 use crate::error::ContractError;
@@ -9,7 +9,7 @@ use crate::state::{
 
 pub fn sell(
     deps: DepsMut,
-    env: Env,
+    _env: Env,
     info: MessageInfo,
     orders: Vec<SellOrderMsg>,
 ) -> Result<Response, ContractError> {
@@ -50,7 +50,7 @@ pub fn sell(
 
 pub fn update_sell_orders(
     deps: DepsMut,
-    env: Env,
+    _env: Env,
     info: MessageInfo,
     updates: Vec<UpdateSellOrderMsg>,
 ) -> Result<Response, ContractError> {
@@ -86,7 +86,7 @@ pub fn update_sell_orders(
 
 pub fn cancel_sell_order(
     deps: DepsMut,
-    env: Env,
+    _env: Env,
     info: MessageInfo,
     sell_order_id: u64,
 ) -> Result<Response, ContractError> {
@@ -105,7 +105,7 @@ pub fn cancel_sell_order(
 
 pub fn buy_direct(
     deps: DepsMut,
-    env: Env,
+    _env: Env,
     info: MessageInfo,
     orders: Vec<BuyOrderMsg>,
 ) -> Result<Response, ContractError> {
@@ -129,10 +129,6 @@ pub fn buy_direct(
         }
 
         // Process the trade
-        // This is a simplified version. In a real implementation, you'd need to handle
-        // partial fills, update balances, and possibly interact with other modules.
-
-        // Update sell order quantity
         let order_quantity = Uint128::from_str(&order.quantity)?;
         let sell_order_quantity = Uint128::from_str(&sell_order.quantity)?;
 
@@ -147,8 +143,6 @@ pub fn buy_direct(
         } else {
             SELL_ORDERS.save(deps.storage, order.sell_order_id, &sell_order)?;
         }
-
-        // In a real implementation, you'd transfer tokens here
     }
 
     Ok(Response::new().add_attribute("method", "buy_direct"))
@@ -210,7 +204,7 @@ pub fn gov_send_from_fee_pool(
     _env: Env,
     info: MessageInfo,
     recipient: String,
-    coins: Vec<cosmwasm_std::Coin>,
+    coins: Vec<Coin>,
 ) -> Result<Response, ContractError> {
     // In a real implementation, you'd check if the sender has the authority to send from the fee pool
     // You'd also need to implement the actual transfer of coins from the fee pool
@@ -220,15 +214,13 @@ pub fn gov_send_from_fee_pool(
         .add_attribute("recipient", recipient))
 }
 
-fn calculate_fee(
-    price: &cosmwasm_std::Coin,
-    fee_percentage: &str,
-) -> Result<cosmwasm_std::Coin, ContractError> {
-    let fee_percentage = Uint128::from_str(fee_percentage)?;
+fn calculate_fee(price: &Coin, fee_percentage: &str) -> Result<Coin, ContractError> {
+    let fee_percentage =
+        Uint128::from_str(fee_percentage).map_err(|_| ContractError::InvalidInput {})?;
     let fee_amount = price
         .amount
-        .multiply_ratio(fee_percentage, Uint128::new(100));
-    Ok(cosmwasm_std::Coin {
+        .multiply_ratio(fee_percentage, Uint128::new(10000)); // Assuming fee is in basis points
+    Ok(Coin {
         denom: price.denom.clone(),
         amount: fee_amount,
     })

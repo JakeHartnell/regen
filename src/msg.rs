@@ -1,7 +1,7 @@
 use cosmwasm_schema::{cw_serde, QueryResponses};
 use cosmwasm_std::{Coin, Timestamp};
 
-use crate::state::{AllowedDenom, FeeParams, Market, SellOrder};
+use crate::state::{AllowedDenom, FeeParams, SellOrder};
 
 #[cw_serde]
 pub struct InstantiateMsg {
